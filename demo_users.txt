@@ -1,0 +1,14 @@
+Regular User:
+User ID: demo_user
+Client ID: client001
+Password: password123
+
+Administrator:
+User ID: admin
+Client ID: client001
+Password: admin123
+
+Doctor:
+User ID: dr_novak
+Client ID: clinic_dental
+Password: dental2024

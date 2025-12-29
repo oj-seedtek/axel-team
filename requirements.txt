@@ -1,0 +1,13 @@
+# Dental IQ - Python Dependencies
+
+# Core framework
+streamlit>=1.28.0
+
+# Note: hashlib is part of Python standard library (used for password hashing)
+
+# Optional: For future enhancements
+# pandas>=2.0.0          # Data manipulation
+# numpy>=1.24.0          # Numerical operations
+# requests>=2.31.0       # API calls
+# python-dotenv>=1.0.0   # Environment variables
+# bcrypt>=4.0.0          # More secure password hashing (production recommended)
