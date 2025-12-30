@@ -63,9 +63,48 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
   }
 }
 .sim-dropdown { 
-  padding:8px 12px; border-radius:8px; border:2px solid #00acc1; 
-  background:#fff; color:#007c91; font-size:13px; cursor:pointer; 
-  min-width:140px; font-weight:600 
+  padding:10px 16px; 
+  border-radius:16px; 
+  border:2px solid #00acc1; 
+  background:#fff; 
+  color:#007c91; 
+  font-size:13px; 
+  cursor:pointer; 
+  min-width:140px; 
+  font-weight:600;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23007c91' d='M7 10L2 5h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 40px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,172,193,0.1);
+}
+.sim-dropdown:hover {
+  border-color: #00e5ff;
+  box-shadow: 0 4px 12px rgba(0,172,193,0.2);
+  transform: translateY(-1px);
+}
+.sim-dropdown:focus {
+  outline: none;
+  border-color: #00e5ff;
+  box-shadow: 0 0 0 4px rgba(0,172,193,0.15), 0 4px 16px rgba(0,172,193,0.2);
+}
+.sim-dropdown option {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fff;
+  color: #007c91;
+  font-weight: 500;
+}
+.sim-dropdown option:checked {
+  background: linear-gradient(135deg, #b2ebf2, #80deea);
+  color: #007c91;
+  font-weight: 600;
+}
+.sim-dropdown option:hover {
+  background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+  color: #007c91;
 }
 .main { display:flex; align-items:center; justify-content:center; padding:20px }
 .tuner { position:relative; width:650px; height:650px }
@@ -105,18 +144,33 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
   position: absolute;
   background: linear-gradient(145deg, #fff, #f8fcfd);
   padding: 8px 10px;
-  border-radius: 10px;
-  box-shadow: 0 6px 20px rgba(0,172,193,0.25);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,172,193,0.3);
   z-index: 900;
   display: none;
   opacity: 0;
-  transform: scale(0.8) translateY(10px);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: scale(0.7) translateY(20px) rotate(-5deg);
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(10px);
 }
 .mini-kpi-popup.show {
   display: flex;
   opacity: 1;
-  transform: scale(1) translateY(0);
+  transform: scale(1) translateY(0) rotate(0deg);
+  animation: popupBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popupBounce {
+  0% {
+    transform: scale(0.7) translateY(20px) rotate(-5deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) translateY(-5px) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) translateY(0) rotate(0deg);
+    opacity: 1;
+  }
 }
 .mini-kpi-popup .kpi-item {
   display: flex;
@@ -189,6 +243,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
   display: block;
   max-height: 280px;
   overflow-y: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.agent-popup table tbody {
+  display: block;
+  max-height: 240px;
+  overflow-y: auto;
+  width: 100%;
+}
+.agent-popup table thead,
+.agent-popup table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
 }
 .agent-popup thead { 
   position: sticky; 
@@ -244,6 +312,146 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
 .agent-popup .priority-high { background: #ffcdd2; color: #c62828; }
 .agent-popup .priority-medium { background: #fff9c4; color: #f57f17; }
 .agent-popup .priority-low { background: #e0f7fa; color: #00838f; }
+
+/* Attention items with modern checkboxes */
+.attention-item {
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+.attention-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  cursor: pointer;
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #ffffff, #f8fcfd);
+  border: 2px solid #e0f7fa;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.attention-checkbox-label::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #00acc1, #00e5ff);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+.attention-checkbox-label:hover {
+  border-color: #00acc1;
+  box-shadow: 0 4px 12px rgba(0,172,193,0.15);
+  transform: translateY(-2px);
+}
+.attention-checkbox-label:hover::before {
+  transform: scaleY(1);
+}
+.attention-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.attention-checkmark {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border: 2.5px solid #00acc1;
+  border-radius: 6px;
+  background: #fff;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.attention-checkmark::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 3px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform 0.2s ease 0.1s;
+}
+.attention-checkbox:checked + .attention-checkmark {
+  background: linear-gradient(135deg, #00acc1, #00e5ff);
+  border-color: #00acc1;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,172,193,0.3);
+}
+.attention-checkbox:checked + .attention-checkmark::after {
+  transform: rotate(45deg) scale(1);
+}
+.attention-content {
+  flex: 1;
+  transition: all 0.3s ease;
+}
+.attention-patient {
+  font-size: 15px;
+  font-weight: 700;
+  color: #007c91;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.attention-context {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+.attention-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  padding-top: 6px;
+  border-top: 1px solid #e0f7fa;
+  margin-top: 6px;
+}
+.attention-checkbox:checked ~ .attention-content .attention-patient {
+  opacity: 0.6;
+}
+.attention-checkbox:checked ~ .attention-content .attention-context {
+  opacity: 0.5;
+}
+.attention-checkbox:checked ~ .attention-content .attention-description {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+.attention-save-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #b0bec5, #cfd8dc);
+  color: #78909c;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: not-allowed;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.attention-save-btn.enabled {
+  background: linear-gradient(135deg, #00acc1, #00e5ff);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,172,193,0.3);
+}
+.attention-save-btn.enabled:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,172,193,0.4);
+}
+.attention-save-btn:disabled {
+  opacity: 0.6;
+}
 .agent-popup .simulation-header {
   background: linear-gradient(135deg, #ff5252, #ff8a80);
   color: white;
@@ -272,14 +480,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
 .modal-content {
   background: #fff;
   padding: 24px;
-  border-radius: 16px;
+  border-radius: 20px;
   width: 620px;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  animation: modalIn 0.3s ease-out;
+  box-shadow: 0 24px 80px rgba(0,172,193,0.4), 0 0 0 1px rgba(0,172,193,0.1);
   position: relative;
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 .modal-content.maximized {
   width: 95vw !important;
@@ -288,14 +496,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
   max-height: 90vh !important;
 }
 @keyframes modalIn {
-  from {
+  0% {
     opacity: 0;
-    transform: scale(0.9) translateY(-20px);
+    transform: scale(0.85) translateY(30px) rotateX(10deg);
+    filter: blur(4px);
   }
-  to {
+  50% {
+    transform: scale(1.02) translateY(-5px) rotateX(-2deg);
+  }
+  100% {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: scale(1) translateY(0) rotateX(0deg);
+    filter: blur(0);
   }
+}
+.modal-content {
+  animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-style: preserve-3d;
+  perspective: 1000px;
 }
 .modal-content h4 { margin-bottom:12px; color:#007c91; font-size: 18px; }
 .modal-content .kpis { display:flex; gap:8px; margin-bottom:12px }
@@ -307,8 +525,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
   border-collapse:collapse; 
   margin-top:12px;
   display: block;
-  max-height: 300px;
+  max-height: 60vh;
   overflow-y: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.modal-content table tbody {
+  display: block;
+  max-height: calc(60vh - 50px);
+  overflow-y: auto;
+  width: 100%;
+}
+.modal-content table thead,
+.modal-content table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
 }
 .modal-content thead { 
   position: sticky; 
@@ -367,6 +599,59 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
 .chat-head { background:linear-gradient(135deg,#1e3a5f,#2d5a87); color:#fff; padding:12px; border-radius:12px 12px 0 0; display:flex; justify-content:space-between }
 .chat-body { padding:12px; overflow:auto; flex:1 }
 .chat-input { border-top:1px solid #eef9fb; padding:10px; display:flex; gap:8px }
+.chat-send-btn {
+  background: linear-gradient(135deg, #1e3a5f, #2d5a87);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.chat-send-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(30,58,95,0.3);
+}
+.chat-send-btn:active {
+  transform: scale(0.95) translateY(0);
+  box-shadow: 0 2px 6px rgba(30,58,95,0.2);
+}
+.chat-send-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+.chat-send-btn.clicked::before {
+  width: 300px;
+  height: 300px;
+}
+@keyframes sendPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(30,58,95,0.7);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(30,58,95,0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(30,58,95,0);
+  }
+}
+.chat-send-btn.animating {
+  animation: sendPulse 0.6s ease;
+}
 .typing-indicator { 
   display: inline-flex;
   padding: 10px 15px;
@@ -459,11 +744,47 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
 }
 .config-input, .config-select {
   width: 100%;
-  padding: 8px 12px;
+  padding: 10px 16px;
   border: 2px solid #e0f7fa;
-  border-radius: 8px;
+  border-radius: 16px;
   font-size: 13px;
   margin-bottom: 4px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,172,193,0.08);
+}
+.config-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23007c91' d='M7 10L2 5h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 40px;
+  cursor: pointer;
+}
+.config-select:hover {
+  border-color: #00acc1;
+  box-shadow: 0 4px 12px rgba(0,172,193,0.15);
+  transform: translateY(-1px);
+}
+.config-select:focus {
+  outline: none;
+  border-color: #00acc1;
+  box-shadow: 0 0 0 4px rgba(0,172,193,0.15), 0 4px 16px rgba(0,172,193,0.2);
+}
+.config-select option {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fff;
+  color: #007c91;
+  font-weight: 500;
+}
+.config-select option:checked {
+  background: linear-gradient(135deg, #b2ebf2, #80deea);
+  color: #007c91;
+  font-weight: 600;
+}
+.config-select option:hover {
+  background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+  color: #007c91;
 }
 .config-checkbox-group {
   display: flex;
@@ -475,20 +796,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
   width: 18px;
   height: 18px;
   cursor: pointer;
-}
-.config-save-btn {
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(135deg, #00acc1, #00e5ff);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 12px;
-}
-.config-save-btn:hover {
-  opacity: 0.9;
 }
 .config-action-buttons {
   display: flex;
@@ -504,9 +811,34 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 .config-apply-btn:hover {
   opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255,152,0,0.3);
+}
+.config-save-btn {
+  flex: 1;
+  padding: 10px;
+  background: linear-gradient(135deg, #00acc1, #00e5ff);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.config-save-btn.enabled {
+  opacity: 1;
+  pointer-events: auto;
+}
+.config-save-btn.enabled:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,172,193,0.3);
 }
 .user-menu {
   position: absolute;
@@ -607,7 +939,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
       </select>
       <button class="config-btn" id="configBtn" title="Konfigurace agentů">⚙️</button>
       <button class="icon-btn user-menu-btn" id="userMenuBtn" title="Uživatelské menu">👤</button>
-      <button class="icon-btn ai-chat" onclick="toggleChat()" title="AI Asistent">💬</button>
+      <button class="icon-btn ai-chat" onclick="toggleChat()" title="Axel">💬</button>
       
       <!-- User menu dropdown -->
       <div class="user-menu" id="userMenu">
@@ -674,17 +1006,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-content" id="modalContent" style="position:relative;">
-    <button class="modal-close" onclick="closeModal()">×</button>
     <div id="modalBody"></div>
   </div>
 </div>
 
 <div class="chat" id="chatBox">
-  <div class="chat-head"><div>🤖 AI Asistent</div><div><button onclick="toggleChat()" style="background:none;border:none;color:#fff;font-weight:700;cursor:pointer">✕</button></div></div>
+  <div class="chat-head"><div>🤖 Axel</div><div><button onclick="toggleChat()" style="background:none;border:none;color:#fff;font-weight:700;cursor:pointer">✕</button></div></div>
   <div class="chat-body" id="chatBody"></div>
   <div class="chat-input">
     <input id="chatInput" placeholder="Zadejte zprávu..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #eef9fb">
-    <button onclick="sendChat()" style="background:linear-gradient(135deg,#1e3a5f,#2d5a87);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer">Send</button>
+    <button id="chatSendBtn" onclick="sendChat()" class="chat-send-btn">Send</button>
   </div>
 </div>
 

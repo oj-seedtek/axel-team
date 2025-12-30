@@ -34,6 +34,9 @@ function placeAgents() {
   root.innerHTML = '';
   miniKpiPopups = [];
   
+  // Clean up any existing agent popups
+  document.querySelectorAll('.agent-popup').forEach(p => p.remove());
+  
   // Circle layout configuration
   const centerX = 325; // half of 650px
   const centerY = 325; // half of 650px
@@ -70,12 +73,25 @@ function placeAgents() {
     div.style.position = 'absolute';
     div.style.left = (pos.x - 60) + 'px'; // 60 = half of 120px width
     div.style.top = (pos.y - 60) + 'px'; // 60 = half of 120px height
-    div.innerHTML = `<div>${agent.avatar}</div>`;
+    
+    // Render avatar properly - check if it's a data URL (image) or emoji
+    let avatarHtml = '';
+    if (agent.avatar && agent.avatar.startsWith('data:image')) {
+      // It's a base64 image - render as img tag
+      avatarHtml = `<img src="${agent.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="${agent.name}">`;
+    } else {
+      // It's an emoji or text - render as div
+      avatarHtml = `<div style="font-size:44px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">${agent.avatar || '👤'}</div>`;
+    }
+    div.innerHTML = avatarHtml;
     div.dataset.agentId = agent.id;
 
-    // Create floating popup for simulation mode
-    const popup = createAgentPopup(agent, shouldHighlight);
-    document.body.appendChild(popup);
+    // Create popup only for non-simulation mode (simulation uses modals now)
+    // For simulation mode, we still create it but it won't be used/shown
+    const popup = shouldHighlight ? null : createAgentPopup(agent, false);
+    if (popup) {
+      document.body.appendChild(popup);
+    }
 
     // Create mini KPI popup
     const miniKpi = createMiniKpiPopup(agent);
@@ -107,38 +123,20 @@ function placeAgents() {
 }
 
 /**
- * Create agent detail popup (for simulation mode)
+ * Create agent detail popup (for non-simulation mode only)
+ * Note: Simulation mode now uses modals instead
  */
 function createAgentPopup(agent, isSimulated) {
+  // Don't create popup for simulation mode - we use modals now
+  if (isSimulated) {
+    return null;
+  }
+  
   const popup = document.createElement('div');
   popup.className = 'agent-popup';
   popup.dataset.agentId = agent.id;
-  
-  if (isSimulated) {
-    popup.innerHTML = `
-      <div class="agent-popup-header">
-        <h4>${agent.name} - ${agent.role}</h4>
-        <div class="popup-controls">
-          <button class="popup-btn" onclick="toggleMaximizePopup('${agent.id}')" title="Maximalizovat/Obnovit">⛶</button>
-          <button class="popup-btn" onclick="closeAgentPopup('${agent.id}')" title="Zavřít">×</button>
-        </div>
-      </div>
-      <div class="simulation-header">🚨 Vyžaduje okamžitou pozornost</div>
-      <div class="kpis">${agent.kpis.map(k => 
-        '<div class="kpi"><div>' + k[1] + '</div><div style="font-size:10px">' + k[0] + '</div></div>'
-      ).join('')}</div>
-      <div style="margin-top:12px;margin-bottom:8px;font-weight:600;color:#007c91">Úkoly k dokončení:</div>
-      ${agent.simulation_tasks ? agent.simulation_tasks.map(t => `
-        <div class="task-item">
-          <input type="checkbox" class="task-checkbox">
-          <div class="task-text">
-            ${t.task}
-            <div><span class="task-priority priority-${getPriorityClass(t.priority)}">${t.priority}</span></div>
-          </div>
-        </div>
-      `).join('') : '<div style="color:#888;padding:6px">Žádné úkoly</div>'}
-    `;
-  }
+  // Empty popup for non-simulation mode (will use modal instead)
+  popup.innerHTML = '';
   
   return popup;
 }
@@ -185,16 +183,11 @@ function handleAgentClick(e, agent, div, popup, pos, isSimulated) {
     div.classList.add('selected');
   }
   
+  // Close any existing popups
   document.querySelectorAll('.agent-popup').forEach(p => p.classList.remove('show'));
   
-  if (isSimulated) {
-    // Simulation mode - show floating popup near agent
-    positionAgentPopup(popup, div, pos, agent.id);
-    popup.classList.add('show');
-  } else {
-    // Non-simulation mode - show centered modal
-    showModal(agent);
-  }
+  // Both simulation and non-simulation modes now use modals
+  showModal(agent, isSimulated);
 }
 
 /**
@@ -238,27 +231,199 @@ function handleOutsideClick(e) {
 }
 
 /**
+ * Get rows that need attention (for simulation mode)
+ */
+function getRowsNeedingAttention(agent) {
+  if (!agent.rows || agent.rows.length === 0) return [];
+  
+  // Filter rows that need attention based on status/result
+  const attentionIndicators = [
+    '⚠️', '⏳', '📞', 
+    'Chybí', 'Nalezeno', 'Problém', 'Neodpovězený',
+    'Přepojeno', 'Čeká', 'Vyžaduje', 'Nesoulad',
+    'Chybějící', 'Neúplná', 'Duplicitní'
+  ];
+  
+  return agent.rows.filter(row => {
+    const values = Object.values(row).join(' ').toLowerCase();
+    const lowerIndicators = attentionIndicators.map(i => i.toLowerCase());
+    
+    // Check if any indicator is in the row values
+    const hasIndicator = lowerIndicators.some(indicator => 
+      values.includes(indicator)
+    );
+    
+    // Also check specific fields for each agent type
+    if (agent.id === 'isabella') {
+      const result = row['Výsledek'] || '';
+      return hasIndicator || result.includes('⏳') || result.includes('📞') || result.includes('Čeká');
+    } else if (agent.id === 'gabriel') {
+      const comment = row['Komentář'] || '';
+      const found = row['Zjištěno'] || '';
+      return hasIndicator || comment.includes('⚠️') || found === 'Ano';
+    } else if (agent.id === 'leo') {
+      const status = row['Status'] || '';
+      return hasIndicator || status.includes('⚠️') || status.includes('⏳') || status.includes('Chybí');
+    } else if (agent.id === 'auditor') {
+      // All auditor rows need attention
+      return true;
+    } else if (agent.id === 'nora') {
+      // Nora rows typically don't need attention, but check anyway
+      const summary = row['Shrnutí'] || '';
+      return hasIndicator || summary.includes('Drobné') || summary.includes('Nutná');
+    }
+    
+    return hasIndicator;
+  });
+}
+
+/**
+ * Format row as attention item with description
+ */
+function formatAttentionItem(row, agentId, idx) {
+  // Extract patient name and context based on agent type
+  let patientName = '';
+  let context = '';
+  let problemDescription = row['Popis problému'] || '';
+  
+  if (agentId === 'isabella') {
+    patientName = row['Pacient'] || '';
+    const reason = row['Důvod hovoru'] || '';
+    const request = row['Požadavek'] || '';
+    const result = row['Výsledek'] || '';
+    const time = row['Čas'] || '';
+    context = `${reason}${request ? ` • ${request}` : ''}${time ? ` • ${time}` : ''}${result ? ` • ${result}` : ''}`;
+    
+    if (!problemDescription) {
+      if (result.includes('⏳') || result.includes('📞')) {
+        problemDescription = `Hovor vyžaduje další akci: ${result}`;
+      }
+    }
+  } else if (agentId === 'gabriel') {
+    patientName = row['Odesílatel'] || '';
+    const topic = row['Téma'] || '';
+    const found = row['Zjištěno'] || '';
+    const comment = row['Komentář'] || '';
+    context = `${topic}${found ? ` • Zjištěno: ${found}` : ''}${comment ? ` • ${comment}` : ''}`;
+    
+    if (!problemDescription) {
+      if (comment.includes('⚠️') || found === 'Ano') {
+        problemDescription = `E-mail vyžaduje okamžitou pozornost: ${topic}`;
+      }
+    }
+  } else if (agentId === 'leo') {
+    patientName = row['Soubor'] || '';
+    const status = row['Status'] || '';
+    const size = row['Velikost'] || '';
+    const archive = row['Archiv'] || '';
+    context = `${status}${size ? ` • ${size}` : ''}${archive ? ` • ${archive}` : ''}`;
+    
+    if (!problemDescription) {
+      if (status.includes('⚠️') || status.includes('⏳')) {
+        problemDescription = `Karta vyžaduje akci: ${status}`;
+      }
+    }
+  } else if (agentId === 'nora') {
+    patientName = row['Pacient'] || '';
+    const summary = row['Shrnutí'] || '';
+    const insurance = row['Pojišťovna'] || '';
+    const time = row['Čas přípravy'] || '';
+    context = `${insurance ? `${insurance}` : ''}${summary ? ` • ${summary}` : ''}${time ? ` • ${time}` : ''}`;
+    
+    if (!problemDescription) {
+      if (summary.includes('Drobné') || summary.includes('Nutná')) {
+        problemDescription = `Shrnutí vyžaduje kontrolu: ${summary}`;
+      }
+    }
+  } else if (agentId === 'auditor') {
+    patientName = row['Pacient'] || '';
+    const problem = row['Problém'] || '';
+    const priority = row['Priorita'] || '';
+    const link = row['Link'] || '';
+    context = `${problem}${priority ? ` • Priorita: ${priority}` : ''}`;
+    
+    if (!problemDescription) {
+      problemDescription = `Nalezen problém: ${problem}`;
+    }
+  } else {
+    // Fallback: try to find patient name in any field
+    patientName = row['Pacient'] || row['Odesílatel'] || row['Soubor'] || '';
+    const keys = Object.keys(row);
+    const values = Object.values(row);
+    context = keys.map((key, i) => {
+      if (key === 'Link' || key === 'Čas' || key === 'Velikost' || key === 'Archiv' || key === 'Popis problému' || key === 'Pacient' || key === 'Odesílatel' || key === 'Soubor') {
+        return '';
+      }
+      return `${key}: ${values[i]}`;
+    }).filter(v => v).join(' • ');
+  }
+  
+  return { 
+    patientName, 
+    context, 
+    problemDescription, 
+    row, 
+    idx 
+  };
+}
+
+/**
  * Show modal with agent details
  */
-function showModal(agent) {
+function showModal(agent, isSimulated = false) {
   const modalBody = document.getElementById('modalBody');
   
-  let tableHtml = '';
-  if (agent.rows && agent.rows.length > 0) {
-    const headers = Object.keys(agent.rows[0]);
-    const headerRow = '<tr>' + headers.map(h => '<th>' + h + '</th>').join('') + '</tr>';
-    const bodyRows = agent.rows.map(r => 
-      '<tr>' + Object.values(r).map(v => '<td>' + v + '</td>').join('') + '</tr>'
-    ).join('');
-    tableHtml = '<table><thead>' + headerRow + '</thead><tbody>' + bodyRows + '</tbody></table>';
+  let contentHtml = '';
+  
+  if (isSimulated) {
+    // Simulation mode: Show only rows that need attention with checkboxes
+    const attentionRows = getRowsNeedingAttention(agent);
+    
+    if (attentionRows.length > 0) {
+      const attentionItems = attentionRows.map((row, idx) => formatAttentionItem(row, agent.id, idx));
+      
+      contentHtml = `
+        <div style="margin-top:16px;margin-bottom:12px;font-weight:600;color:#007c91;font-size:16px">Položky vyžadující pozornost:</div>
+        <div id="attention-container-modal-${agent.id}" style="max-height:50vh;overflow-y:auto;">
+          ${attentionItems.map((item, idx) => `
+            <div class="attention-item" data-item-idx="${idx}">
+              <label class="attention-checkbox-label">
+                <input type="checkbox" class="attention-checkbox" id="attention-modal-${agent.id}-${idx}" onchange="updateSaveButtonState('${agent.id}')">
+                <span class="attention-checkmark"></span>
+                <div class="attention-content">
+                  ${item.patientName ? `<div class="attention-patient">${item.patientName}</div>` : ''}
+                  ${item.context ? `<div class="attention-context">${item.context}</div>` : ''}
+                  ${item.problemDescription ? `<div class="attention-description">${item.problemDescription}</div>` : ''}
+                </div>
+              </label>
+            </div>
+          `).join('')}
+        </div>
+        <button class="attention-save-btn" id="save-btn-modal-${agent.id}" onclick="saveAttentionChangesModal('${agent.id}')" disabled style="margin-top:16px;width:100%">💾 Uložit změny</button>
+      `;
+    } else {
+      contentHtml = '<div style="color:#888;padding:20px;text-align:center;font-size:14px">✅ Všechny položky jsou v pořádku, není potřeba žádná akce.</div>';
+    }
   } else {
-    tableHtml = '<div style="color:#888;padding:12px">Žádná data</div>';
+    // Non-simulation mode: Show table as before (exclude "Popis problému" from table display)
+    if (agent.rows && agent.rows.length > 0) {
+      const headers = Object.keys(agent.rows[0]).filter(h => h !== 'Popis problému');
+      const headerRow = '<tr>' + headers.map(h => '<th>' + h + '</th>').join('') + '</tr>';
+      const bodyRows = agent.rows.map(r => {
+        const values = headers.map(h => r[h] || '');
+        return '<tr>' + values.map(v => '<td>' + v + '</td>').join('') + '</tr>';
+      }).join('');
+      contentHtml = '<table><thead>' + headerRow + '</thead><tbody>' + bodyRows + '</tbody></table>';
+    } else {
+      contentHtml = '<div style="color:#888;padding:12px">Žádná data</div>';
+    }
   }
   
   modalBody.innerHTML = `
     <div class="modal-header">
       <div>
         <h4>${agent.name} - ${agent.role}</h4>
+        ${isSimulated ? '<div class="simulation-header" style="margin-top:8px;margin-bottom:0">🚨 Vyžaduje okamžitou pozornost</div>' : ''}
       </div>
       <div class="modal-controls">
         <button class="popup-btn" onclick="toggleMaximizeModal()" title="Maximalizovat/Obnovit">⛶</button>
@@ -268,10 +433,80 @@ function showModal(agent) {
     <div class="kpis">${agent.kpis.map(k => 
       '<div class="kpi"><div>' + k[1] + '</div><div>' + k[0] + '</div></div>'
     ).join('')}</div>
-    ${tableHtml}
+    ${contentHtml}
   `;
   
   document.getElementById('modalOverlay').classList.add('show');
+}
+
+function updateSaveButtonState(agentId) {
+  const container = document.getElementById(`attention-container-modal-${agentId}`);
+  const saveBtn = document.getElementById(`save-btn-modal-${agentId}`);
+  
+  if (!container || !saveBtn) return;
+  
+  const checkboxes = container.querySelectorAll('.attention-checkbox');
+  const hasChecked = Array.from(checkboxes).some(cb => cb.checked);
+  
+  saveBtn.disabled = !hasChecked;
+  if (hasChecked) {
+    saveBtn.classList.add('enabled');
+  } else {
+    saveBtn.classList.remove('enabled');
+  }
+}
+
+function saveAttentionChangesModal(agentId) {
+  const container = document.getElementById(`attention-container-modal-${agentId}`);
+  const saveBtn = document.getElementById(`save-btn-modal-${agentId}`);
+  
+  if (!container) return;
+  
+  const checkboxes = container.querySelectorAll('.attention-checkbox');
+  const checkedItems = [];
+  
+  checkboxes.forEach((checkbox, idx) => {
+    if (checkbox.checked) {
+      checkedItems.push(idx);
+    }
+  });
+  
+  if (checkedItems.length === 0) return;
+  
+  // Remove checked items with animation
+  checkedItems.reverse().forEach(idx => {
+    const item = container.querySelector(`[data-item-idx="${idx}"]`);
+    if (item) {
+      item.style.transition = 'opacity 0.4s ease, transform 0.4s ease, margin 0.4s ease';
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(-30px) scale(0.95)';
+      item.style.marginBottom = '0';
+      item.style.paddingTop = '0';
+      item.style.paddingBottom = '0';
+      item.style.height = '0';
+      item.style.overflow = 'hidden';
+      setTimeout(() => {
+        item.remove();
+      }, 400);
+    }
+  });
+  
+  // Update button state and hide if no items left
+  setTimeout(() => {
+    const remainingItems = container.querySelectorAll('.attention-item');
+    if (remainingItems.length === 0) {
+      if (saveBtn) {
+        saveBtn.style.transition = 'opacity 0.3s ease';
+        saveBtn.style.opacity = '0';
+        setTimeout(() => {
+          saveBtn.remove();
+        }, 300);
+      }
+      container.innerHTML = '<div style="color:#4caf50;padding:20px;text-align:center;font-size:14px;font-weight:600">✅ Všechny položky byly úspěšně zpracovány!</div>';
+    } else {
+      updateSaveButtonState(agentId);
+    }
+  }, 450);
 }
 
 /**
@@ -350,7 +585,16 @@ function toggleChat() {
  */
 function sendChat() {
   const input = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('chatSendBtn');
   if (!input.value.trim() || isTyping) return;
+  
+  // Animate button
+  if (sendBtn) {
+    sendBtn.classList.add('clicked', 'animating');
+    setTimeout(() => {
+      sendBtn.classList.remove('clicked', 'animating');
+    }, 600);
+  }
   
   const userMessage = input.value.trim();
   chatMessages.push({ who: 'user', text: userMessage });
@@ -409,12 +653,22 @@ function saveConfig() {
   if (confirm('Uložit nastavení trvale?')) {
     alert('✅ Vaše změny byly uloženy!');
     document.getElementById('configPopup').classList.remove('show');
+    // Reset button state
+    const saveBtn = document.querySelector('.config-save-btn');
+    if (saveBtn) {
+      saveBtn.classList.remove('enabled');
+    }
   }
 }
 
 function applyConfig() {
   if (confirm('Opravdu chcete použít tato nastavení?')) {
     alert('⚡ Nastavení bylo použito!');
+    // Enable save button after apply
+    const saveBtn = document.querySelector('.config-save-btn');
+    if (saveBtn) {
+      saveBtn.classList.add('enabled');
+    }
   }
 }
 
@@ -445,6 +699,48 @@ function closeAgentPopup(agentId) {
   // Also deselect the agent
   document.querySelectorAll('.agent').forEach(a => a.classList.remove('selected'));
   selectedAgentId = null;
+}
+
+function saveTaskChanges(agentId) {
+  const container = document.getElementById(`tasks-container-${agentId}`);
+  if (!container) return;
+  
+  const checkboxes = container.querySelectorAll('.task-checkbox');
+  const checkedItems = [];
+  
+  checkboxes.forEach((checkbox, idx) => {
+    if (checkbox.checked) {
+      checkedItems.push(idx);
+    }
+  });
+  
+  // Remove checked items
+  checkedItems.reverse().forEach(idx => {
+    const taskItem = container.querySelector(`[data-task-idx="${idx}"]`);
+    if (taskItem) {
+      taskItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      taskItem.style.opacity = '0';
+      taskItem.style.transform = 'translateX(-20px)';
+      setTimeout(() => {
+        taskItem.remove();
+      }, 300);
+    }
+  });
+  
+  // Hide save button if no tasks left
+  setTimeout(() => {
+    const remainingTasks = container.querySelectorAll('.task-item');
+    if (remainingTasks.length === 0) {
+      const saveBtn = container.parentElement.querySelector('.config-save-btn');
+      if (saveBtn) {
+        saveBtn.style.transition = 'opacity 0.3s ease';
+        saveBtn.style.opacity = '0';
+        setTimeout(() => {
+          saveBtn.remove();
+        }, 300);
+      }
+    }
+  }, 350);
 }
 
 /**
@@ -700,7 +996,16 @@ document.getElementById('modalOverlay').addEventListener('click', (e) => {
 document.getElementById('configBtn').addEventListener('click', (e) => {
   e.stopPropagation();
   const popup = document.getElementById('configPopup');
+  const isShowing = popup.classList.contains('show');
   popup.classList.toggle('show');
+  
+  // Reset save button state when opening
+  if (!isShowing) {
+    const saveBtn = document.querySelector('.config-save-btn');
+    if (saveBtn) {
+      saveBtn.classList.remove('enabled');
+    }
+  }
 });
 
 // Configuration agent selector

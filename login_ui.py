@@ -4,9 +4,10 @@ Login page UI components
 import streamlit as st
 from auth import verify_credentials, login_user
 
+
 def render_login_page():
     """Render the login page"""
-    
+
     # Custom CSS for login page
     st.markdown("""
     <style>
@@ -25,6 +26,23 @@ def render_login_page():
         justify-content: center;
         font-size: 36px;
         box-shadow: 0 6px 20px rgba(0,172,193,0.3);
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        animation: logoPulse 2s ease-in-out infinite;
+    }
+    .login-logo:hover {
+        transform: scale(1.15) rotate(5deg);
+        box-shadow: 0 12px 40px rgba(0,172,193,0.5),
+                    0 0 30px rgba(0,229,255,0.4);
+    }
+    @keyframes logoPulse {
+        0%, 100% {
+            box-shadow: 0 6px 20px rgba(0,172,193,0.3);
+        }
+        50% {
+            box-shadow: 0 6px 20px rgba(0,172,193,0.3),
+                        0 0 20px 10px rgba(0,229,255,0.3);
+        }
     }
     .login-title {
         color: #007c91;
@@ -38,31 +56,69 @@ def render_login_page():
         font-style: italic;
         margin-bottom: 25px;
     }
-    .login-form-container {
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 30px 40px;
-        background: linear-gradient(145deg, #ffffff, #f0f9fa);
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0,172,193,0.2);
+
+    /* Center form */
+    div[data-testid="stForm"] {
+        max-width: 400px !important;
+        margin: 30px auto !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }
-    .login-form-container h3 {
-        text-align: center;
-        margin-bottom: 20px;
+
+    /* Inputs */
+    div[data-testid="stForm"] .stTextInput {
+        margin-bottom: 16px !important;
     }
-    .stTextInput > div > div > input {
-        border-radius: 10px;
-        border: 2px solid #e0f7fa;
-        padding: 12px;
+    div[data-testid="stForm"] input {
+        border-radius: 12px !important;
+        border: 2px solid #e0f7fa !important;
+        padding: 12px 16px !important;
     }
-    .stTextInput > div > div > input:focus {
-        border-color: #00acc1;
-        box-shadow: 0 0 0 3px rgba(0,172,193,0.1);
+    div[data-testid="stForm"] input:focus {
+        border-color: #00acc1 !important;
+        box-shadow: 0 0 0 4px rgba(0,172,193,0.1) !important;
+        outline: none !important;
+    }
+
+    /* Hide password eye */
+    div[data-testid="stForm"] .stTextInput button {
+        display: none !important;
+    }
+
+    /* === GUARANTEED SUBMIT BUTTON FIX === */
+
+    /* Center submit button container */
+    div[data-testid="stForm"] div:has(> button[type="submit"]) {
+        display: flex !important;
+        justify-content: center !important;
+        margin-top: 24px !important;
+    }
+
+    /* Submit button */
+    div[data-testid="stForm"] button[type="submit"] {
+        background: linear-gradient(135deg, #7dd1fc, #c0ebff) !important;
+        color: #006d7a !important;
+        border: 2px solid #5ac8fa !important;
+        border-radius: 12px !important;
+        padding: 12px 36px !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        min-width: 170px !important;
+        cursor: pointer !important;
+        box-shadow: 0 4px 12px rgba(125, 209, 252, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    div[data-testid="stForm"] button[type="submit"]:hover {
+        background: linear-gradient(135deg, #5ac8fa, #a8e0ff) !important;
+        border-color: #00acc1 !important;
+        transform: translateY(-2px) !important;
     }
     </style>
     """, unsafe_allow_html=True)
-    
-    # Floating logo without container
+
+    # Logo
     st.markdown("""
     <div class="login-logo-container">
         <div class="login-logo">🦷</div>
@@ -70,53 +126,35 @@ def render_login_page():
         <div class="login-subtitle">Váš administrativní tým</div>
     </div>
     """, unsafe_allow_html=True)
-    
-    # Create centered columns for form
-    col1, col2, col3 = st.columns([1, 2, 1])
-    
-    with col2:
-        # Form container with background
-        st.markdown('<div class="login-form-container">', unsafe_allow_html=True)
-        st.markdown("### Přihlášení")
-        
-        # Login form
-        with st.form("login_form", clear_on_submit=False):
-            user_id = st.text_input(
-                "User ID",
-                placeholder="Zadejte vaše uživatelské jméno",
-                help="Vaše uživatelské ID"
-            )
-            
-            client_id = st.text_input(
-                "Client ID",
-                placeholder="Zadejte Client ID",
-                help="ID vaší kliniky/organizace"
-            )
-            
-            password = st.text_input(
-                "Heslo",
-                type="password",
-                placeholder="Zadejte heslo",
-                help="Vaše heslo"
-            )
-            
-            submit = st.form_submit_button(
-                "🔐 Přihlásit se",
-                use_container_width=True
-            )
-            
-            if submit:
-                if not user_id or not client_id or not password:
-                    st.error("⚠️ Vyplňte prosím všechna pole")
+
+    # Login form
+    with st.form("login_form", clear_on_submit=False):
+        user_id = st.text_input(
+            "User ID",
+            placeholder="Zadejte vaše uživatelské jméno"
+        )
+
+        client_id = st.text_input(
+            "Client ID",
+            placeholder="Zadejte Client ID"
+        )
+
+        password = st.text_input(
+            "Heslo",
+            type="password",
+            placeholder="Zadejte heslo"
+        )
+
+        submit = st.form_submit_button("Přihlásit se")
+
+        if submit:
+            if not user_id or not client_id or not password:
+                st.error("⚠️ Vyplňte prosím všechna pole")
+            else:
+                user_info = verify_credentials(user_id, client_id, password)
+                if user_info:
+                    login_user(user_info)
+                    st.success(f"✅ Přihlášení úspěšné! Vítejte, {user_info['name']}")
+                    st.rerun()
                 else:
-                    # Verify credentials
-                    user_info = verify_credentials(user_id, client_id, password)
-                    
-                    if user_info:
-                        login_user(user_info)
-                        st.success(f"✅ Přihlášení úspěšné! Vítejte, {user_info['name']}")
-                        st.rerun()
-                    else:
-                        st.error("❌ Neplatné přihlašovací údaje. Zkuste to znovu.")
-        
-        st.markdown('</div>', unsafe_allow_html=True)
+                    st.error("❌ Neplatné přihlašovací údaje. Zkuste to znovu.")

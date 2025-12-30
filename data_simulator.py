@@ -51,12 +51,20 @@ class DataSimulator:
                 "📞 Přepojeno na recepci", 
                 "⏳ Čeká na potvrzení SMS"
             ])
+            problem_desc = ""
+            if status != "✅ Rezervace potvrzena":
+                if "📞" in status:
+                    problem_desc = f"Hovor byl přepojen na recepci. Zkontrolujte, zda byl problém vyřešen a zda pacient obdržel potřebné informace."
+                elif "⏳" in status:
+                    problem_desc = f"SMS potvrzení nebylo dosud doručeno. Zkontrolujte stav odeslání a v případě potřeby znovu odešlete potvrzovací SMS zprávu."
+            
             rows.append({
                 "Pacient": random.choice(self.CZECH_NAMES),
                 "Důvod hovoru": random.choice(self.CALL_REASONS),
                 "Požadavek": random.choice(self.REQUESTS),
                 "Čas": f"{random.randint(8, 17)}:{random.choice(['00','15','30','45'])}",
-                "Výsledek": status
+                "Výsledek": status,
+                "Popis problému": problem_desc
             })
         return rows
     
@@ -68,14 +76,25 @@ class DataSimulator:
         rows = []
         for _ in range(n):
             zjisteno = "Ne" if random.random() < 0.75 else "Ano"
+            comment = random.choice([
+                "⚠️ Vyžaduje reakci",
+                "✅ Zpracováno automaticky"
+            ])
+            problem_desc = ""
+            if "⚠️" in comment or zjisteno == "Ano":
+                if "pojištění" in random.choice(self.EMAIL_ISSUES).lower():
+                    problem_desc = "Pacient se dotazuje na krytí pojišťovnou. Zkontrolujte jeho pojištění a odpovězte s přesnými informacemi o hrazení léčby."
+                elif "neodpovězený" in random.choice(self.EMAIL_ISSUES).lower():
+                    problem_desc = "E-mail od pacienta zůstal neodpovězený déle než 48 hodin. Je nutné neprodleně odpovědět a omluvit se za zpoždění."
+                else:
+                    problem_desc = "E-mail vyžaduje okamžitou pozornost. Zkontrolujte obsah a odpovězte pacientovi co nejdříve."
+            
             rows.append({
                 "Odesílatel": f"patient{random.randint(1,50)}@mail.cz",
                 "Téma": random.choice(self.EMAIL_ISSUES),
                 "Zjištěno": zjisteno,
-                "Komentář": random.choice([
-                    "⚠️ Vyžaduje reakci",
-                    "✅ Zpracováno automaticky"
-                ])
+                "Komentář": comment,
+                "Popis problému": problem_desc
             })
         return rows
     
@@ -90,11 +109,16 @@ class DataSimulator:
                 self.FINDINGS_POSITIVE if random.random() < 0.75 
                 else self.FINDINGS_OTHER
             )
+            problem_desc = ""
+            if finding in self.FINDINGS_OTHER:
+                problem_desc = f"U pacienta byly zjištěny {finding.lower()}. Je potřeba zkontrolovat kompletní anamnézu a doporučit vhodnou léčbu nebo preventivní opatření."
+            
             rows.append({
                 "Pacient": random.choice(self.CZECH_NAMES),
                 "Pojišťovna": random.choice(self.INSURANCES),
                 "Shrnutí": finding,
-                "Čas přípravy": f"{random.randint(1,6)} min"
+                "Čas přípravy": f"{random.randint(1,6)} min",
+                "Popis problému": problem_desc
             })
         return rows
     
@@ -109,11 +133,18 @@ class DataSimulator:
                 "⚠️ Chybí příloha",
                 "⏳ Ve frontě"
             ])
+            problem_desc = ""
+            if "⚠️" in status:
+                problem_desc = "V karetě pacienta chybí povinná příloha. Zkontrolujte dokumentaci a doplňte chybějící přílohu před archivací."
+            elif "⏳" in status:
+                problem_desc = "Karta pacienta čeká ve frontě na zpracování již delší dobu. Zkontrolujte, zda nedošlo k chybě při importu."
+            
             rows.append({
                 "Soubor": f"patient_card_{i+1}.pdf",
                 "Status": status,
                 "Velikost": f"{random.randint(120,1200)} kB",
-                "Archiv": f"archiv_{random.randint(1,4)}"
+                "Archiv": f"archiv_{random.randint(1,4)}",
+                "Popis problému": problem_desc
             })
         return rows
     
@@ -124,10 +155,24 @@ class DataSimulator:
         
         rows = []
         for i in range(n):
+            problem = random.choice(self.AUDIT_ISSUES)
+            problem_desc = ""
+            if "podpis" in problem.lower():
+                problem_desc = "V záznamu pacienta chybí povinný podpis ošetřujícího lékaře. Zkontrolujte dokumentaci a zajistěte doplnění podpisu."
+            elif "fakturace" in problem.lower():
+                problem_desc = "Byl zjištěn nesoulad mezi provedenými zákroky a fakturovanými položkami. Je nutné zkontrolovat fakturaci a opravit chyby."
+            elif "anamnéza" in problem.lower():
+                problem_desc = "Anamnéza pacienta je neúplná - chybí některé povinné údaje. Doplňte chybějící informace do anamnézy."
+            elif "rentgen" in problem.lower():
+                problem_desc = "K záznamu pacienta chybí rentgenový snímek, který byl zmíněn v dokumentaci. Zkontrolujte, zda byl snímek nahrán."
+            elif "duplicitní" in problem.lower():
+                problem_desc = "Byl nalezen duplicitní záznam pro stejného pacienta. Zkontrolujte oba záznamy a odstraňte nebo sloučte duplicitní záznam."
+            
             rows.append({
                 "Pacient": random.choice(self.CZECH_NAMES),
-                "Problém": random.choice(self.AUDIT_ISSUES),
+                "Problém": problem,
                 "Priorita": random.choice(self.PRIORITIES),
-                "Link": f"https://dentalsystem.cz/record/{i+1}"
+                "Link": f"https://dentalsystem.cz/record/{i+1}",
+                "Popis problému": problem_desc
             })
         return rows
