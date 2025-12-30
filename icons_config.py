@@ -59,3 +59,4 @@ def set_icon(icon_name: str, icon_value: str):
     """Set or update an icon"""
     ICONS[icon_name] = icon_value
 
+
