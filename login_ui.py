@@ -7,6 +7,48 @@ from auth import verify_credentials, login_user
 
 def render_login_page():
     """Render the login page"""
+    
+    # Check for localStorage session before showing login form
+    import streamlit.components.v1 as components
+    st.markdown("""
+    <script>
+    (function() {
+        // Check localStorage for saved session
+        try {
+            const storedSession = localStorage.getItem('dental_iq_session');
+            if (storedSession) {
+                const sessionData = JSON.parse(storedSession);
+                const now = Date.now();
+                const sessionAge = now - (sessionData.timestamp || 0);
+                const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+                
+                if (sessionAge < maxAge && sessionData.user_id && sessionData.client_id) {
+                    // Restore session by redirecting with restore parameter
+                    const restoreData = btoa(JSON.stringify({
+                        user_id: sessionData.user_id,
+                        client_id: sessionData.client_id
+                    }));
+                    
+                    const currentUrl = new URL(window.location.href);
+                    if (!currentUrl.searchParams.has('restore_session') && 
+                        !currentUrl.searchParams.has('logout')) {
+                        currentUrl.searchParams.set('restore_session', restoreData);
+                        window.location.href = currentUrl.toString();
+                    }
+                } else {
+                    // Session too old, clear it
+                    localStorage.removeItem('dental_iq_session');
+                    localStorage.removeItem('dental_iq_session_token');
+                }
+            }
+        } catch (e) {
+            // Invalid session data, clear it
+            localStorage.removeItem('dental_iq_session');
+            localStorage.removeItem('dental_iq_session_token');
+        }
+    })();
+    </script>
+    """, unsafe_allow_html=True)
 
     # Custom CSS for login page
     st.markdown("""
@@ -154,6 +196,18 @@ def render_login_page():
                 user_info = verify_credentials(user_id, client_id, password)
                 if user_info:
                     login_user(user_info)
+                    # Store session token for persistence (will be saved to localStorage by JS)
+                    import base64
+                    import json
+                    import time
+                    session_token = {
+                        "user_id": user_id,
+                        "client_id": client_id,
+                        "timestamp": str(int(time.time()))
+                    }
+                    token_data = json.dumps(session_token)
+                    encoded_token = base64.b64encode(token_data.encode('utf-8')).decode('utf-8')
+                    st.session_state._session_token = encoded_token
                     st.success(f"✅ Přihlášení úspěšné! Vítejte, {user_info['name']}")
                     st.rerun()
                 else:

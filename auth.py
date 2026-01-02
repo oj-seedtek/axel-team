@@ -102,3 +102,27 @@ def init_auth_state():
         st.session_state.user_info = None
     if "show_welcome" not in st.session_state:
         st.session_state.show_welcome = False
+
+def restore_session_from_token(user_id: str, client_id: str) -> bool:
+    """
+    Restore session from stored token (simulates cookie-based auth)
+    Returns True if session was restored, False otherwise
+    """
+    if user_id not in USERS_DB:
+        return False
+    
+    user = USERS_DB[user_id]
+    if user["client_id"] != client_id:
+        return False
+    
+    # Restore user info
+    user_info = {
+        "user_id": user_id,
+        "client_id": client_id,
+        "name": user["name"],
+        "role": user["role"],
+        "job_role": user.get("job_role", "admin")
+    }
+    
+    login_user(user_info)
+    return True

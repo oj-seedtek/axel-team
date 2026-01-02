@@ -5,6 +5,52 @@
 
 // Global state
 const appData = window.APP_DATA || { agents: [], simulate_active: false, selected_agent: "", user_info: {} };
+
+// Define handleLogout globally IMMEDIATELY (before DOMContentLoaded)
+// This ensures it's available when onclick handlers are evaluated
+window.handleLogout = function handleLogout() {
+  console.log('handleLogout called');
+  if (confirm('Opravdu se chcete odhlásit?')) {
+    console.log('Logout confirmed, clearing session...');
+    
+    // Clear localStorage immediately
+    try {
+      localStorage.removeItem('dental_iq_session');
+      localStorage.removeItem('dental_iq_session_token');
+      console.log('localStorage cleared');
+    } catch (e) {
+      console.error('Error clearing localStorage:', e);
+    }
+    
+    // Redirect to the same page with logout parameter
+    // Use window.top to handle iframe case (Streamlit component)
+    let targetWindow = window;
+    try {
+      if (window.top && window.top !== window) {
+        targetWindow = window.top;
+        console.log('Using top window for redirect');
+      }
+    } catch (e) {
+      // Cross-origin iframe, use current window
+      console.log('Using current window (cross-origin)');
+      targetWindow = window;
+    }
+    
+    try {
+      const currentUrl = new URL(targetWindow.location.href);
+      currentUrl.searchParams.set('logout', 'true');
+      console.log('Redirecting to:', currentUrl.toString());
+      targetWindow.location.href = currentUrl.toString();
+    } catch (e) {
+      // Fallback: try to reload with query param
+      console.error('Error redirecting:', e);
+      const baseUrl = window.location.href.split('?')[0];
+      window.location.href = baseUrl + '?logout=true';
+    }
+  } else {
+    console.log('Logout cancelled');
+  }
+};
 let chatMessages = [];
 let selectedAgentId = null;
 let simulateActive = appData.simulate_active;
@@ -589,7 +635,7 @@ function toggleChat() {
 /**
  * Send chat message
  */
-function sendChat() {
+async function sendChat() {
   const input = document.getElementById('chatInput');
   const sendBtn = document.getElementById('chatSendBtn');
   if (!input.value.trim() || isTyping) return;
@@ -611,13 +657,109 @@ function sendChat() {
   isTyping = true;
   showTypingIndicator();
   
-  // Simulate realistic delay (1-3 seconds)
-  const delay = 1000 + Math.random() * 2000;
-  setTimeout(() => {
+  try {
+    // Send message to Streamlit backend via postMessage
+    if (window.parent && window.parent !== window) {
+      // We're in an iframe (Streamlit component)
+      window.parent.postMessage({
+        type: 'streamlit:setComponentValue',
+        value: JSON.stringify({
+          action: 'chat',
+          message: userMessage,
+          agents_data: appData.agents,
+          chat_history: chatMessages
+        })
+      }, '*');
+      
+      // Poll for response (Streamlit will rerun and we can check for response)
+      let pollCount = 0;
+      const maxPolls = 40; // 20 seconds max
+      
+      const pollInterval = setInterval(() => {
+        pollCount++;
+        
+        // Try to get response from parent (this is a simplified approach)
+        // In production, you'd use proper Streamlit component return values
+        if (pollCount >= maxPolls) {
+          clearInterval(pollInterval);
+          isTyping = false;
+          chatMessages.push({ 
+            who: 'bot', 
+            text: 'Omlouvám se, odpověď trvá příliš dlouho. Zkontrolujte prosím konfiguraci Azure OpenAI.' 
+          });
+          renderChat();
+        }
+      }, 500);
+      
+      // For now, use a direct API approach via a hidden endpoint
+      // This is a workaround until proper Streamlit component communication is set up
+      callChatAPI(userMessage, pollInterval);
+    } else {
+      // Direct call if not in iframe
+      callChatAPI(userMessage);
+    }
+  } catch (error) {
     isTyping = false;
-    chatMessages.push({ who: 'bot', text: 'Demo: rozumím, provádím akci – ' + userMessage });
+    chatMessages.push({ 
+      who: 'bot', 
+      text: 'Omlouvám se, došlo k chybě při komunikaci s AI. Zkuste to prosím znovu.' 
+    });
     renderChat();
-  }, delay);
+    console.error('Chat error:', error);
+  }
+}
+
+/**
+ * Call chat API directly
+ */
+async function callChatAPI(userMessage, pollInterval = null) {
+  try {
+    // Create a form data approach for Streamlit
+    // Since Streamlit components run in iframes, we need to communicate via parent
+    const formData = new FormData();
+    formData.append('message', userMessage);
+    formData.append('agents_data', JSON.stringify(appData.agents));
+    formData.append('chat_history', JSON.stringify(chatMessages));
+    
+    // Use fetch to call a Streamlit endpoint
+    // Note: This requires a custom Streamlit endpoint or using query params
+    const response = await fetch(window.location.href + '?chat_message=' + encodeURIComponent(userMessage), {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    
+    // Parse response if it's JSON
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      // If not JSON, it might be HTML (Streamlit page)
+      // In this case, we'll need to extract data differently
+      // For now, show a message about configuration
+      throw new Error('Response is not JSON - check Azure OpenAI configuration');
+    }
+    
+    if (data && data.response) {
+      if (pollInterval) clearInterval(pollInterval);
+      isTyping = false;
+      chatMessages.push({ who: 'bot', text: data.response });
+      renderChat();
+    } else {
+      throw new Error('No response in data');
+    }
+  } catch (error) {
+    if (pollInterval) clearInterval(pollInterval);
+    isTyping = false;
+    chatMessages.push({ 
+      who: 'bot', 
+      text: 'Omlouvám se, došlo k chybě při komunikaci s AI. Zkontrolujte prosím konfiguraci Azure OpenAI (AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY).' 
+    });
+    renderChat();
+    console.error('Chat API error:', error);
+  }
 }
 
 /**
@@ -1529,17 +1671,19 @@ function fakeLeoLogin() {
   btn.textContent = '⏳ Přihlašování...';
   btn.disabled = true;
   
-  setTimeout(() => {
-    btn.textContent = '✅ Přihlášeno';
-    btn.style.background = 'linear-gradient(135deg, #4caf50, #66bb6a)';
-    alert(`Úspěšně přihlášeno do ${systemName}!`);
-    
     setTimeout(() => {
-      btn.textContent = originalText;
-      btn.style.background = '';
-      btn.disabled = false;
-    }, 2000);
-  }, 1500);
+      btn.textContent = '✅ Přihlášeno';
+      btn.style.background = 'linear-gradient(135deg, #80deea, #4dd0e1, #26c6da)';
+      btn.style.color = '#006064';
+      alert(`Úspěšně přihlášeno do ${systemName}!`);
+      
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.disabled = false;
+      }, 2000);
+    }, 1500);
 }
 
 /**
@@ -1565,19 +1709,22 @@ function fakeLeoConnect() {
     const success = Math.random() > 0.3;
     if (success) {
       btn.textContent = '✅ Propojeno';
-      btn.style.background = 'linear-gradient(135deg, #4caf50, #66bb6a)';
+      btn.style.background = 'linear-gradient(135deg, #80deea, #4dd0e1, #26c6da)';
+      btn.style.color = '#006064';
       alert('Složka byla úspěšně propojena!');
     } else {
       btn.textContent = '❌ Chyba';
       btn.style.background = 'linear-gradient(135deg, #f44336, #e57373)';
+      btn.style.color = '#fff';
       alert('Složka nebyla nalezena. Zkontrolujte odkaz a zkuste to znovu.');
     }
     
-    setTimeout(() => {
-      btn.textContent = originalText;
-      btn.style.background = '';
-      btn.disabled = false;
-    }, 2000);
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.disabled = false;
+      }, 2000);
   }, 1500);
 }
 
@@ -1721,8 +1868,31 @@ function generateNoraSummary(patientId, patientName) {
  * Event Listeners
  */
 
+// Session persistence functions
+function saveSessionToStorage() {
+  if (appData.user_info && appData.session_token) {
+    try {
+      const sessionData = {
+        user_id: appData.user_info.user_id,
+        client_id: appData.user_info.client_id || 'client001',
+        token: appData.session_token,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('dental_iq_session', JSON.stringify(sessionData));
+      localStorage.setItem('dental_iq_session_token', appData.session_token);
+    } catch (e) {
+      console.error('Error saving session to storage:', e);
+    }
+  }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+  // Save session to localStorage FIRST (before anything else)
+  if (appData.user_info && appData.user_info.user_id && appData.session_token) {
+    saveSessionToStorage();
+  }
+  
   placeAgents();
   
   // Set initial config content
@@ -1743,6 +1913,11 @@ document.addEventListener('DOMContentLoaded', function() {
       const adminItem = document.getElementById('adminPanelItem');
       if (adminItem) adminItem.style.display = 'flex';
     }
+  }
+  
+  // Ensure handleLogout is available
+  if (typeof handleLogout === 'function') {
+    window.handleLogout = handleLogout;
   }
 });
 
@@ -1873,15 +2048,8 @@ document.addEventListener('click', (e) => {
 
 /**
  * User menu actions
+ * Note: handleLogout is defined at the top of the file for immediate availability
  */
-function handleLogout() {
-  if (confirm('Opravdu se chcete odhlásit?')) {
-    // Redirect to the same page with logout parameter
-    const currentUrl = new URL(window.location.href);
-    currentUrl.searchParams.set('logout', 'true');
-    window.location.href = currentUrl.toString();
-  }
-}
 
 function openPersonalSettings() {
   alert('Osobní nastavení - tato funkce bude brzy k dispozici');

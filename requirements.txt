@@ -3,6 +3,9 @@
 # Core framework
 streamlit>=1.28.0
 
+# Azure OpenAI
+openai>=1.12.0
+
 # Note: hashlib is part of Python standard library (used for password hashing)
 
 # Optional: For future enhancements

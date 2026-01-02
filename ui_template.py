@@ -805,40 +805,94 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
 .config-apply-btn {
   flex: 1;
   padding: 10px;
-  background: linear-gradient(135deg, #ff9800, #ffc107);
-  color: white;
+  background: linear-gradient(135deg, #80deea, #4dd0e1, #26c6da);
+  color: #006064;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(38,198,218,0.2), 
+              0 1px 3px rgba(38,198,218,0.15),
+              inset 0 1px 0 rgba(255,255,255,0.3);
+  position: relative;
+  overflow: hidden;
+}
+.config-apply-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
 }
 .config-apply-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255,152,0,0.3);
+  background: linear-gradient(135deg, #84ffff, #4dd0e1, #26c6da);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(38,198,218,0.35), 
+              0 3px 8px rgba(38,198,218,0.25),
+              inset 0 1px 0 rgba(255,255,255,0.4);
+  color: #004d40;
+}
+.config-apply-btn:hover::before {
+  left: 100%;
+}
+.config-apply-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(38,198,218,0.25), 
+              0 1px 3px rgba(38,198,218,0.2),
+              inset 0 1px 0 rgba(255,255,255,0.3);
 }
 .config-save-btn {
   flex: 1;
   padding: 10px;
-  background: linear-gradient(135deg, #00acc1, #00e5ff);
-  color: white;
+  background: linear-gradient(135deg, #80deea, #4dd0e1, #26c6da);
+  color: #006064;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0.5;
   pointer-events: none;
+  box-shadow: 0 2px 8px rgba(38,198,218,0.2), 
+              0 1px 3px rgba(38,198,218,0.15),
+              inset 0 1px 0 rgba(255,255,255,0.3);
+  position: relative;
+  overflow: hidden;
+}
+.config-save-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
 }
 .config-save-btn.enabled {
   opacity: 1;
   pointer-events: auto;
 }
 .config-save-btn.enabled:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,172,193,0.3);
+  background: linear-gradient(135deg, #84ffff, #4dd0e1, #26c6da);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(38,198,218,0.35), 
+              0 3px 8px rgba(38,198,218,0.25),
+              inset 0 1px 0 rgba(255,255,255,0.4);
+  color: #004d40;
+}
+.config-save-btn.enabled:hover::before {
+  left: 100%;
+}
+.config-save-btn.enabled:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(38,198,218,0.25), 
+              0 1px 3px rgba(38,198,218,0.2),
+              inset 0 1px 0 rgba(255,255,255,0.3);
 }
 .config-toggle-group {
   display: flex;
@@ -1104,8 +1158,99 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
 </div>
 
 <script>
-// Inject app data into global scope
+// Inject app data into global scope IMMEDIATELY
 window.APP_DATA = __PAYLOAD__;
+
+// IMMEDIATE SESSION PERSISTENCE (runs immediately when page loads)
+(function() {
+  'use strict';
+  console.log('Session persistence script running...');
+  
+  const appData = window.APP_DATA || {};
+  const urlParams = new URLSearchParams(window.location.search);
+  
+  // Don't restore if logout is requested
+  if (urlParams.has('logout')) {
+    console.log('Logout detected, clearing localStorage');
+    localStorage.removeItem('dental_iq_session');
+    localStorage.removeItem('dental_iq_session_token');
+    return;
+  }
+  
+  // If user IS logged in, save session to localStorage for future reloads
+  if (appData.user_info && appData.user_info.user_id && appData.session_token) {
+    console.log('User logged in, saving session to localStorage');
+    try {
+      const sessionData = {
+        user_id: appData.user_info.user_id,
+        client_id: appData.user_info.client_id || 'client001',
+        token: appData.session_token,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('dental_iq_session', JSON.stringify(sessionData));
+      localStorage.setItem('dental_iq_session_token', appData.session_token);
+      console.log('Session saved to localStorage');
+    } catch (e) {
+      console.error('Error saving session:', e);
+    }
+  }
+  // If user is NOT logged in, check localStorage for saved session
+  else if (!appData.user_info || !appData.user_info.user_id) {
+    console.log('User not logged in, checking localStorage...');
+    const storedSession = localStorage.getItem('dental_iq_session');
+    if (storedSession) {
+      try {
+        const sessionData = JSON.parse(storedSession);
+        const now = Date.now();
+        const sessionAge = now - (sessionData.timestamp || 0);
+        const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+        
+        console.log('Found stored session, age:', sessionAge, 'ms');
+        
+        // If session is valid and not too old, restore it
+        if (sessionAge < maxAge && sessionData.user_id && sessionData.client_id) {
+          console.log('Session valid, restoring...');
+          // Restore session by redirecting with restore parameter
+          const restoreData = btoa(JSON.stringify({
+            user_id: sessionData.user_id,
+            client_id: sessionData.client_id
+          }));
+          
+          // Get the top-level window URL (handle iframe case)
+          let targetWindow = window;
+          try {
+            if (window.top && window.top !== window) {
+              targetWindow = window.top;
+            }
+          } catch (e) {
+            // Cross-origin iframe, use current window
+            targetWindow = window;
+          }
+          
+          const currentUrl = new URL(targetWindow.location.href);
+          // Only redirect if we don't already have a restore_session param
+          if (!currentUrl.searchParams.has('restore_session')) {
+            currentUrl.searchParams.set('restore_session', restoreData);
+            console.log('Redirecting to restore session:', currentUrl.toString());
+            targetWindow.location.href = currentUrl.toString();
+          }
+        } else {
+          // Session too old, clear it
+          console.log('Session expired, clearing');
+          localStorage.removeItem('dental_iq_session');
+          localStorage.removeItem('dental_iq_session_token');
+        }
+      } catch (e) {
+        // Invalid session data, clear it
+        console.error('Error parsing session data:', e);
+        localStorage.removeItem('dental_iq_session');
+        localStorage.removeItem('dental_iq_session_token');
+      }
+    } else {
+      console.log('No stored session found');
+    }
+  }
+})();
 </script>
 <script>
 ''' + js_content + '''
