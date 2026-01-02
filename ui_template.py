@@ -840,6 +840,90 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0,172,193,0.3);
 }
+.config-toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.config-toggle-item {
+  margin-bottom: 4px;
+}
+.config-toggle-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.config-toggle-label:hover {
+  background: #f0f9fa;
+}
+.config-toggle-label span {
+  flex: 1;
+  font-size: 13px;
+}
+/* Toggle Switch Styling */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+  flex-shrink: 0;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 28px;
+}
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #5ac8fa;
+}
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(22px);
+}
+.toggle-switch input:focus + .toggle-slider {
+  box-shadow: 0 0 1px #5ac8fa;
+}
+.config-toggle-notes {
+  animation: slideDown 0.3s ease;
+  margin-left: 62px;
+}
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .user-menu {
   position: absolute;
   top: 70px;

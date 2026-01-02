@@ -173,6 +173,12 @@ function handleAgentClick(e, agent, div, popup, pos, isSimulated) {
   e.stopPropagation();
   hideMiniKpis();
   
+  // Special handling for Nora - show patient search
+  if (agent.id === 'nora' && !isSimulated) {
+    showNoraPatientSearch();
+    return;
+  }
+  
   // Toggle selection
   if (selectedAgentId === agent.id) {
     selectedAgentId = null;
@@ -750,7 +756,205 @@ const CONFIG_TEMPLATES = {
   isabella: `
     <div class="config-section">
       <label class="config-label">Pracovní doba</label>
-      <input type="text" class="config-input" placeholder="8:00 - 18:00" value="8:00 - 18:00">
+      <div style="display:flex;gap:12px;align-items:center">
+        <select class="config-select" style="flex:1">
+          <option>00:00</option>
+          <option>00:15</option>
+          <option>00:30</option>
+          <option>00:45</option>
+          <option>01:00</option>
+          <option>01:15</option>
+          <option>01:30</option>
+          <option>01:45</option>
+          <option>02:00</option>
+          <option>02:15</option>
+          <option>02:30</option>
+          <option>02:45</option>
+          <option>03:00</option>
+          <option>03:15</option>
+          <option>03:30</option>
+          <option>03:45</option>
+          <option>04:00</option>
+          <option>04:15</option>
+          <option>04:30</option>
+          <option>04:45</option>
+          <option>05:00</option>
+          <option>05:15</option>
+          <option>05:30</option>
+          <option>05:45</option>
+          <option>06:00</option>
+          <option>06:15</option>
+          <option>06:30</option>
+          <option>06:45</option>
+          <option>07:00</option>
+          <option>07:15</option>
+          <option>07:30</option>
+          <option>07:45</option>
+          <option selected>08:00</option>
+          <option>08:15</option>
+          <option>08:30</option>
+          <option>08:45</option>
+          <option>09:00</option>
+          <option>09:15</option>
+          <option>09:30</option>
+          <option>09:45</option>
+          <option>10:00</option>
+          <option>10:15</option>
+          <option>10:30</option>
+          <option>10:45</option>
+          <option>11:00</option>
+          <option>11:15</option>
+          <option>11:30</option>
+          <option>11:45</option>
+          <option>12:00</option>
+          <option>12:15</option>
+          <option>12:30</option>
+          <option>12:45</option>
+          <option>13:00</option>
+          <option>13:15</option>
+          <option>13:30</option>
+          <option>13:45</option>
+          <option>14:00</option>
+          <option>14:15</option>
+          <option>14:30</option>
+          <option>14:45</option>
+          <option>15:00</option>
+          <option>15:15</option>
+          <option>15:30</option>
+          <option>15:45</option>
+          <option>16:00</option>
+          <option>16:15</option>
+          <option>16:30</option>
+          <option>16:45</option>
+          <option>17:00</option>
+          <option>17:15</option>
+          <option>17:30</option>
+          <option>17:45</option>
+          <option selected>18:00</option>
+          <option>18:15</option>
+          <option>18:30</option>
+          <option>18:45</option>
+          <option>19:00</option>
+          <option>19:15</option>
+          <option>19:30</option>
+          <option>19:45</option>
+          <option>20:00</option>
+          <option>20:15</option>
+          <option>20:30</option>
+          <option>20:45</option>
+          <option>21:00</option>
+          <option>21:15</option>
+          <option>21:30</option>
+          <option>21:45</option>
+          <option>22:00</option>
+          <option>22:15</option>
+          <option>22:30</option>
+          <option>22:45</option>
+          <option>23:00</option>
+          <option>23:15</option>
+          <option>23:30</option>
+          <option>23:45</option>
+        </select>
+        <span style="color:#666;font-weight:600">-</span>
+        <select class="config-select" style="flex:1">
+          <option>00:00</option>
+          <option>00:15</option>
+          <option>00:30</option>
+          <option>00:45</option>
+          <option>01:00</option>
+          <option>01:15</option>
+          <option>01:30</option>
+          <option>01:45</option>
+          <option>02:00</option>
+          <option>02:15</option>
+          <option>02:30</option>
+          <option>02:45</option>
+          <option>03:00</option>
+          <option>03:15</option>
+          <option>03:30</option>
+          <option>03:45</option>
+          <option>04:00</option>
+          <option>04:15</option>
+          <option>04:30</option>
+          <option>04:45</option>
+          <option>05:00</option>
+          <option>05:15</option>
+          <option>05:30</option>
+          <option>05:45</option>
+          <option>06:00</option>
+          <option>06:15</option>
+          <option>06:30</option>
+          <option>06:45</option>
+          <option>07:00</option>
+          <option>07:15</option>
+          <option>07:30</option>
+          <option>07:45</option>
+          <option>08:00</option>
+          <option>08:15</option>
+          <option>08:30</option>
+          <option>08:45</option>
+          <option>09:00</option>
+          <option>09:15</option>
+          <option>09:30</option>
+          <option>09:45</option>
+          <option>10:00</option>
+          <option>10:15</option>
+          <option>10:30</option>
+          <option>10:45</option>
+          <option>11:00</option>
+          <option>11:15</option>
+          <option>11:30</option>
+          <option>11:45</option>
+          <option>12:00</option>
+          <option>12:15</option>
+          <option>12:30</option>
+          <option>12:45</option>
+          <option>13:00</option>
+          <option>13:15</option>
+          <option>13:30</option>
+          <option>13:45</option>
+          <option>14:00</option>
+          <option>14:15</option>
+          <option>14:30</option>
+          <option>14:45</option>
+          <option>15:00</option>
+          <option>15:15</option>
+          <option>15:30</option>
+          <option>15:45</option>
+          <option>16:00</option>
+          <option>16:15</option>
+          <option>16:30</option>
+          <option>16:45</option>
+          <option>17:00</option>
+          <option>17:15</option>
+          <option>17:30</option>
+          <option>17:45</option>
+          <option>18:00</option>
+          <option>18:15</option>
+          <option>18:30</option>
+          <option>18:45</option>
+          <option>19:00</option>
+          <option>19:15</option>
+          <option>19:30</option>
+          <option>19:45</option>
+          <option>20:00</option>
+          <option>20:15</option>
+          <option>20:30</option>
+          <option>20:45</option>
+          <option>21:00</option>
+          <option>21:15</option>
+          <option>21:30</option>
+          <option>21:45</option>
+          <option>22:00</option>
+          <option>22:15</option>
+          <option>22:30</option>
+          <option>22:45</option>
+          <option>23:00</option>
+          <option>23:15</option>
+          <option>23:30</option>
+          <option>23:45</option>
+        </select>
+      </div>
     </div>
     <div class="config-section">
       <label class="config-label">Režim zpracování hovorů</label>
@@ -758,98 +962,407 @@ const CONFIG_TEMPLATES = {
         <option>Všechny hovory</option>
         <option>Pouze mimo pracovní dobu</option>
         <option>Pouze při plné frontě</option>
-        <option>Prioritní hovory</option>
+        <option>Při plné frontě a mimo pracovní dobu</option>
       </select>
     </div>
     <div class="config-section">
-      <label class="config-label">Upozornění</label>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox" checked>
-        <span style="font-size:13px">E-mailová notifikace</span>
-      </div>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox" checked>
-        <span style="font-size:13px">SMS upozornění</span>
+      <label class="config-label">Automatické akce</label>
+      <div class="config-toggle-group">
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Automatické potvrzování SMS</span>
+            <label class="toggle-switch">
+              <input type="checkbox" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+        </div>
       </div>
     </div>
     <div class="config-section">
-      <label class="config-label">Automatické akce</label>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox" checked>
-        <span style="font-size:13px">Automatické potvrzování SMS</span>
+      <label class="config-label" style="font-size:15px;font-weight:700;margin-bottom:12px">Konfigurace scénářů</label>
+      <div class="config-toggle-group">
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Uvítací fráze (v češtině)</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="isabella-welcome-phrase" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="isabella-welcome-phrase-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Zadejte uvítací frázi..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Použít číslo pojištění k ověření pacienta</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="isabella-insurance-verify" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="isabella-insurance-verify-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k ověření..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Pokud se nepodaří pacienta ověřit</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="isabella-verify-fail" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="isabella-verify-fail-notes" style="display:none;margin-top:8px">
+            <select class="config-select">
+              <option>Přepojit na recepci</option>
+              <option>Požádat o další údaje</option>
+              <option>Označit jako urgentní</option>
+              <option>Zaznamenat a vrátit se později</option>
+            </select>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Pacient si může vybrat doktora</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="isabella-choose-doctor" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="isabella-choose-doctor-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k výběru doktora..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Nechat v kalendáři volné místo pro urgentní případy</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="isabella-urgent-slot" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="isabella-urgent-slot-notes" style="display:none;margin-top:8px">
+            <select class="config-select">
+              <option>1 hodina denně</option>
+              <option>2 hodiny denně</option>
+              <option>3 hodiny denně</option>
+              <option>4 hodiny denně</option>
+              <option>5 hodin denně</option>
+            </select>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Automaticky poslat SMS potvrzení</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="isabella-confirm-sms" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="isabella-confirm-sms-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k SMS potvrzení..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Nabídnout zpětné volání při nedostupnosti</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="isabella-callback" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="isabella-callback-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k zpětnému volání..." rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="config-section">
+      <label class="config-label" style="font-size:15px;font-weight:700;margin-bottom:12px">Definice urgentnosti</label>
+      <div class="config-toggle-group">
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Pacient krvácí</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="isabella-bleeding" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="isabella-bleeding-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k urgentnímu případu..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Pacient má silnou bolest</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="isabella-severe-pain" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="isabella-severe-pain-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k urgentnímu případu..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Pacient utrpěl úraz</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="isabella-trauma" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="isabella-trauma-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k urgentnímu případu..." rows="2"></textarea>
+          </div>
+        </div>
       </div>
     </div>
   `,
   leo: `
     <div class="config-section">
-      <label class="config-label">Cílový archiv</label>
-      <select class="config-select">
-        <option>archiv_1</option>
-        <option selected>archiv_2</option>
-        <option>archiv_3</option>
-        <option>archiv_4</option>
+      <label class="config-label">Cílový systém</label>
+      <select class="config-select" id="leo-target-system" onchange="updateLeoFolderField()">
+        <option value="sharepoint">SharePoint</option>
+        <option value="onedrive" selected>OneDrive</option>
+        <option value="googledrive">Google Drive</option>
       </select>
+      <button class="config-apply-btn" onclick="fakeLeoLogin()" style="width:100%;margin-top:8px">🔐 Přihlásit se</button>
     </div>
     <div class="config-section">
-      <label class="config-label">Maximální velikost souboru</label>
-      <input type="text" class="config-input" value="5 MB">
+      <label class="config-label">Odkaz na složku</label>
+      <input type="text" class="config-input" placeholder="https://..." value="" id="leo-folder-link">
+      <button class="config-apply-btn" onclick="fakeLeoConnect()" style="width:100%;margin-top:8px">🔗 Propojit</button>
     </div>
     <div class="config-section">
-      <label class="config-label">Automatické zpracování</label>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox" checked>
-        <span style="font-size:13px">Automaticky importovat nové karty</span>
+      <label class="config-label" style="font-size:15px;font-weight:700;margin-bottom:12px">Konfigurace struktury archivu</label>
+      <div style="margin-bottom:12px">
+        <label class="config-label">Organizace souborů</label>
+        <select class="config-select">
+          <option>Všechny archivy v jedné složce na pacienta</option>
+          <option>Samostatné složky pro každý typ dokumentu</option>
+        </select>
       </div>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox" checked>
-        <span style="font-size:13px">Kontrola duplicit před nahráním</span>
+      <div style="margin-bottom:12px">
+        <label class="config-label">Identifikace pacienta</label>
+        <select class="config-select">
+          <option>Podle rodného čísla</option>
+          <option selected>Podle jména, příjmení a data narození</option>
+        </select>
       </div>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox">
-        <span style="font-size:13px">OCR rozpoznávání textu</span>
+      <div style="margin-bottom:12px">
+        <label class="config-label">Rozdělení do podsložek</label>
+        <select class="config-select">
+          <option>Podle data</option>
+          <option>Podle formátu souboru</option>
+          <option>Bez rozdělení</option>
+        </select>
+      </div>
+      <div style="margin-bottom:12px">
+        <label class="config-label">Lékařské zprávy</label>
+        <select class="config-select">
+          <option>V hlavní složce</option>
+          <option selected>V samostatné podsložce</option>
+        </select>
+      </div>
+      <div style="margin-bottom:12px">
+        <label class="config-label">Shrnutí komunikace</label>
+        <select class="config-select">
+          <option>V hlavní složce</option>
+          <option selected>V samostatné podsložce</option>
+        </select>
+      </div>
+      <div style="margin-bottom:12px">
+        <label class="config-label">Pojmenování příloh</label>
+        <select class="config-select">
+          <option>Unix datum + typ souboru</option>
+          <option>Datum a čas + název</option>
+          <option>Název + pořadové číslo</option>
+          <option>Původní název souboru</option>
+        </select>
       </div>
     </div>
   `,
   gabriel: `
     <div class="config-section">
-      <label class="config-label">Prioritní klíčová slova</label>
-      <input type="text" class="config-input" value="urgentní, okamžitě, důležité" placeholder="Oddělte čárkou">
+      <label class="config-label" style="font-size:15px;font-weight:700;margin-bottom:12px">Konfigurace</label>
+      <div class="config-toggle-group">
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Automatické potvrzení přijetí e-mailu</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="gabriel-auto-confirm" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-auto-confirm-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k automatickému potvrzení..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Automatická odpověď na dotazy o otevírací době</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="gabriel-auto-reply-hours" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-auto-reply-hours-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k automatické odpovědi..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Eskalace problémů</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="gabriel-escalation" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-escalation-notes" style="display:none;margin-top:8px">
+            <select class="config-select">
+              <option>Okamžitě upozornit</option>
+              <option selected>Shromáždit a odeslat jednou denně</option>
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="config-section">
-      <label class="config-label">Automatické odpovědi</label>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox" checked>
-        <span style="font-size:13px">Automatická odpověď na dotazy o otevírací době</span>
+      <label class="config-label" style="font-size:15px;font-weight:700;margin-bottom:12px">Detekce kritických e-mailů (max 5)</label>
+      <div class="config-toggle-group" id="gabriel-critical-emails">
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Stav pacienta se výrazně zhoršil</span>
+            <label class="toggle-switch">
+              <input type="checkbox" class="critical-email" data-toggle-id="gabriel-worse-state" onchange="toggleNotesField(this);checkMaxCriticalEmails(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-worse-state-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k detekci..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Pacient změnil pojišťovnu</span>
+            <label class="toggle-switch">
+              <input type="checkbox" class="critical-email" data-toggle-id="gabriel-insurance-change" onchange="toggleNotesField(this);checkMaxCriticalEmails(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-insurance-change-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k detekci..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Pacient se nemůže dostavit na schůzku</span>
+            <label class="toggle-switch">
+              <input type="checkbox" class="critical-email" data-toggle-id="gabriel-cannot-attend" onchange="toggleNotesField(this);checkMaxCriticalEmails(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-cannot-attend-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k detekci..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Pacientova data se změnila</span>
+            <label class="toggle-switch">
+              <input type="checkbox" class="critical-email" data-toggle-id="gabriel-data-change" onchange="toggleNotesField(this);checkMaxCriticalEmails(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-data-change-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k detekci..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Nové doporučení od lékaře</span>
+            <label class="toggle-switch">
+              <input type="checkbox" class="critical-email" data-toggle-id="gabriel-doctor-recommendation" onchange="toggleNotesField(this);checkMaxCriticalEmails(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-doctor-recommendation-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k detekci..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Problém s platbou</span>
+            <label class="toggle-switch">
+              <input type="checkbox" class="critical-email" data-toggle-id="gabriel-payment-issue" onchange="toggleNotesField(this);checkMaxCriticalEmails(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-payment-issue-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k detekci..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Stížnost pacienta</span>
+            <label class="toggle-switch">
+              <input type="checkbox" class="critical-email" data-toggle-id="gabriel-complaint" onchange="toggleNotesField(this);checkMaxCriticalEmails(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-complaint-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k detekci..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Naléhavá žádost</span>
+            <label class="toggle-switch">
+              <input type="checkbox" class="critical-email" data-toggle-id="gabriel-urgent-request" onchange="toggleNotesField(this);checkMaxCriticalEmails(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-urgent-request-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k detekci..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Lékařská pohotovost</span>
+            <label class="toggle-switch">
+              <input type="checkbox" class="critical-email" data-toggle-id="gabriel-medical-emergency" onchange="toggleNotesField(this);checkMaxCriticalEmails(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-medical-emergency-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k detekci..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Varování o alergii</span>
+            <label class="toggle-switch">
+              <input type="checkbox" class="critical-email" data-toggle-id="gabriel-allergy-warning" onchange="toggleNotesField(this);checkMaxCriticalEmails(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="gabriel-allergy-warning-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k detekci..." rows="2"></textarea>
+          </div>
+        </div>
       </div>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox" checked>
-        <span style="font-size:13px">Automatické potvrzení přijetí e-mailu</span>
-      </div>
-    </div>
-    <div class="config-section">
-      <label class="config-label">Eskalace problémů</label>
-      <select class="config-select">
-        <option>Okamžitě upozornit</option>
-        <option selected>Shromáždit a odeslat jednou denně</option>
-        <option>Pouze kritické problémy</option>
-      </select>
     </div>
   `,
   nora: `
     <div class="config-section">
       <label class="config-label">Formát výstupu shrnutí</label>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox" checked>
-        <span style="font-size:13px">Textové shrnutí</span>
-      </div>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox">
-        <span style="font-size:13px">Hlasové shrnutí (audio)</span>
-      </div>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox">
-        <span style="font-size:13px">Strukturovaný JSON export</span>
-      </div>
+      <select class="config-select">
+        <option selected>Textové shrnutí</option>
+        <option>Hlasové shrnutí (audio)</option>
+      </select>
     </div>
     <div class="config-section">
       <label class="config-label">Úroveň detailu</label>
@@ -867,6 +1380,17 @@ const CONFIG_TEMPLATES = {
         <option>Slovenština</option>
       </select>
     </div>
+    <div class="config-section">
+      <label class="config-label">Čas před schůzkou pro poskytnutí shrnutí</label>
+      <select class="config-select">
+        <option>15 minut</option>
+        <option>30 minut</option>
+        <option selected>1 hodina</option>
+        <option>2 hodiny</option>
+        <option>4 hodiny</option>
+        <option>1 den</option>
+      </select>
+    </div>
   `,
   auditor: `
     <div class="config-section">
@@ -879,34 +1403,319 @@ const CONFIG_TEMPLATES = {
       </select>
     </div>
     <div class="config-section">
-      <label class="config-label">Kontrolované oblasti</label>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox" checked>
-        <span style="font-size:13px">Úplnost dokumentace</span>
-      </div>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox" checked>
-        <span style="font-size:13px">Fakturační nesrovnalosti</span>
-      </div>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox" checked>
-        <span style="font-size:13px">Chybějící podpisy</span>
-      </div>
-      <div class="config-checkbox-group">
-        <input type="checkbox" class="config-checkbox">
-        <span style="font-size:13px">Duplicitní záznamy</span>
+      <label class="config-label" style="font-size:15px;font-weight:700;margin-bottom:12px">Kontrolované oblasti</label>
+      <div class="config-toggle-group">
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Úplnost dokumentace</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="auditor-documentation" onchange="toggleNotesField(this)" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="auditor-documentation-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k kontrole..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Fakturační nesrovnalosti</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="auditor-billing" onchange="toggleNotesField(this)" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="auditor-billing-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k kontrole..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Chybějící podpisy</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="auditor-signatures" onchange="toggleNotesField(this)" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="auditor-signatures-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k kontrole..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Duplicitní záznamy</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="auditor-duplicates" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="auditor-duplicates-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k kontrole..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="config-toggle-item">
+          <label class="config-toggle-label">
+            <span>Detekce vágních zpráv</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-toggle-id="auditor-vague-reports" onchange="toggleNotesField(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <div class="config-toggle-notes" id="auditor-vague-reports-notes" style="display:none;margin-top:8px">
+            <textarea class="config-input" placeholder="Poznámky k detekci..." rows="2"></textarea>
+          </div>
+        </div>
       </div>
     </div>
     <div class="config-section">
-      <label class="config-label">Priorita upozornění</label>
-      <select class="config-select">
-        <option selected>Pouze vysoká priorita</option>
-        <option>Střední a vyšší</option>
-        <option>Všechny problémy</option>
-      </select>
+      <label class="config-label" style="font-size:15px;font-weight:700;margin-bottom:12px">Upozornění o problémech</label>
+      <div style="margin-bottom:12px">
+        <label class="config-label">Komu upozornit</label>
+        <div class="config-checkbox-group">
+          <input type="checkbox" class="config-checkbox" checked>
+          <span style="font-size:13px">Lékař</span>
+        </div>
+        <div class="config-checkbox-group">
+          <input type="checkbox" class="config-checkbox" checked>
+          <span style="font-size:13px">Supervizor</span>
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label class="config-label">Kanál upozornění</label>
+        <div class="config-checkbox-group">
+          <input type="checkbox" class="config-checkbox" checked>
+          <span style="font-size:13px">Aplikace</span>
+        </div>
+        <div class="config-checkbox-group">
+          <input type="checkbox" class="config-checkbox" checked>
+          <span style="font-size:13px">E-mail</span>
+        </div>
+      </div>
     </div>
   `
 };
+
+/**
+ * Toggle notes field visibility
+ */
+function toggleNotesField(checkbox) {
+  const toggleId = checkbox.getAttribute('data-toggle-id');
+  const notesField = document.getElementById(toggleId + '-notes');
+  if (notesField) {
+    if (checkbox.checked) {
+      notesField.style.display = 'block';
+    } else {
+      notesField.style.display = 'none';
+    }
+  }
+}
+
+/**
+ * Fake login for Leo cloud service
+ */
+function fakeLeoLogin() {
+  const select = document.getElementById('leo-target-system');
+  const system = select?.value || 'onedrive';
+  const systemNames = {
+    'sharepoint': 'SharePoint',
+    'onedrive': 'OneDrive',
+    'googledrive': 'Google Drive'
+  };
+  const systemName = systemNames[system] || 'cloud service';
+  
+  // Simulate login process
+  const btn = event.target;
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ Přihlašování...';
+  btn.disabled = true;
+  
+  setTimeout(() => {
+    btn.textContent = '✅ Přihlášeno';
+    btn.style.background = 'linear-gradient(135deg, #4caf50, #66bb6a)';
+    alert(`Úspěšně přihlášeno do ${systemName}!`);
+    
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.background = '';
+      btn.disabled = false;
+    }, 2000);
+  }, 1500);
+}
+
+/**
+ * Fake folder connection check for Leo
+ */
+function fakeLeoConnect() {
+  const folderInput = document.getElementById('leo-folder-link');
+  const folderLink = folderInput?.value.trim() || '';
+  
+  if (!folderLink) {
+    alert('Zadejte prosím odkaz na složku.');
+    return;
+  }
+  
+  // Simulate connection check
+  const btn = event.target;
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ Kontroluji...';
+  btn.disabled = true;
+  
+  setTimeout(() => {
+    // Randomly succeed or fail for demo
+    const success = Math.random() > 0.3;
+    if (success) {
+      btn.textContent = '✅ Propojeno';
+      btn.style.background = 'linear-gradient(135deg, #4caf50, #66bb6a)';
+      alert('Složka byla úspěšně propojena!');
+    } else {
+      btn.textContent = '❌ Chyba';
+      btn.style.background = 'linear-gradient(135deg, #f44336, #e57373)';
+      alert('Složka nebyla nalezena. Zkontrolujte odkaz a zkuste to znovu.');
+    }
+    
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.background = '';
+      btn.disabled = false;
+    }, 2000);
+  }, 1500);
+}
+
+/**
+ * Check max 5 critical emails selected
+ */
+function checkMaxCriticalEmails(checkbox) {
+  const checked = document.querySelectorAll('#gabriel-critical-emails .critical-email:checked');
+  if (checked.length > 5) {
+    checkbox.checked = false;
+    alert('Můžete vybrat maximálně 5 možností pro detekci kritických e-mailů.');
+    const toggleId = checkbox.getAttribute('data-toggle-id');
+    const notesField = document.getElementById(toggleId + '-notes');
+    if (notesField) {
+      notesField.style.display = 'none';
+    }
+  }
+}
+
+/**
+ * Update Leo folder field placeholder based on target system
+ */
+function updateLeoFolderField() {
+  const select = document.getElementById('leo-target-system');
+  const folderInput = select?.parentElement?.nextElementSibling?.querySelector('.config-input');
+  if (folderInput && select) {
+    const system = select.value;
+    if (system === 'sharepoint') {
+      folderInput.placeholder = 'https://yourcompany.sharepoint.com/...';
+    } else if (system === 'onedrive') {
+      folderInput.placeholder = 'https://onedrive.live.com/...';
+    } else if (system === 'googledrive') {
+      folderInput.placeholder = 'https://drive.google.com/drive/folders/...';
+    }
+  }
+}
+
+/**
+ * Show patient search modal for Nora
+ */
+function showNoraPatientSearch() {
+  const modalBody = document.getElementById('modalBody');
+  modalBody.innerHTML = `
+    <div class="modal-header">
+      <div>
+        <h4>🔍 Vyhledat pacienta - Nora</h4>
+        <div style="margin-top:8px;font-size:13px;color:#666">Vyhledejte pacienta pro poskytnutí shrnutí na vyžádání</div>
+      </div>
+      <div class="modal-controls">
+        <button class="modal-close" onclick="closeModal()" title="Zavřít">×</button>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <div class="config-section">
+        <label class="config-label">Vyhledat pacienta</label>
+        <input type="text" class="config-input" id="noraPatientSearch" placeholder="Zadejte jméno, příjmení nebo rodné číslo..." style="margin-bottom:12px">
+        <button class="config-apply-btn" onclick="searchNoraPatient()" style="width:100%">🔍 Vyhledat</button>
+      </div>
+      <div id="noraSearchResults" style="margin-top:16px;display:none">
+        <div class="config-section">
+          <label class="config-label">Výsledky vyhledávání</label>
+          <div id="noraResultsList"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalOverlay').classList.add('show');
+  
+  // Allow Enter key to search
+  document.getElementById('noraPatientSearch').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      searchNoraPatient();
+    }
+  });
+}
+
+/**
+ * Search for patient in Nora
+ */
+function searchNoraPatient() {
+  const searchTerm = document.getElementById('noraPatientSearch').value.trim();
+  if (!searchTerm) {
+    alert('Zadejte prosím vyhledávací termín.');
+    return;
+  }
+  
+  // Simulate search (in real app, this would be an API call)
+  const resultsDiv = document.getElementById('noraResultsList');
+  const resultsContainer = document.getElementById('noraSearchResults');
+  
+  // Mock results
+  const mockResults = [
+    { name: 'Jan Novák', birthdate: '1985-03-15', insurance: 'VZP', id: '1' },
+    { name: 'Petra Dvořáková', birthdate: '1990-07-22', insurance: 'OZP', id: '2' }
+  ];
+  
+  if (mockResults.length > 0) {
+    resultsContainer.style.display = 'block';
+    resultsDiv.innerHTML = mockResults.map(patient => `
+      <div style="padding:12px;margin-bottom:8px;border-radius:8px;background:linear-gradient(145deg,#e0f7fa,#fff);border:2px solid #e0f7fa;cursor:pointer" 
+           onclick="generateNoraSummary('${patient.id}', '${patient.name}')">
+        <div style="font-weight:700;color:#007c91;margin-bottom:4px">${patient.name}</div>
+        <div style="font-size:12px;color:#666">Narození: ${patient.birthdate} • ${patient.insurance}</div>
+      </div>
+    `).join('');
+  } else {
+    resultsContainer.style.display = 'block';
+    resultsDiv.innerHTML = '<div style="color:#888;padding:12px;text-align:center">Žádné výsledky nenalezeny</div>';
+  }
+}
+
+/**
+ * Generate summary for selected patient
+ */
+function generateNoraSummary(patientId, patientName) {
+  const modalBody = document.getElementById('modalBody');
+  modalBody.innerHTML = `
+    <div class="modal-header">
+      <div>
+        <h4>🧾 Shrnutí pacienta - ${patientName}</h4>
+      </div>
+      <div class="modal-controls">
+        <button class="modal-close" onclick="closeModal()" title="Zavřít">×</button>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding:16px;background:linear-gradient(145deg,#e0f7fa,#fff);border-radius:12px">
+      <div style="color:#666;margin-bottom:12px">Generování shrnutí...</div>
+      <div style="font-size:14px;line-height:1.6">
+        <p><strong>Pacient:</strong> ${patientName}</p>
+        <p><strong>Pojišťovna:</strong> VZP</p>
+        <p><strong>Shrnutí:</strong> Bez kazů, doporučena pravidelná hygiena</p>
+        <p><strong>Poslední návštěva:</strong> 15.01.2024</p>
+        <p><strong>Poznámky:</strong> Pacient je v dobrém stavu, žádné komplikace.</p>
+      </div>
+      <button class="config-apply-btn" onclick="closeModal()" style="width:100%;margin-top:16px">✅ Hotovo</button>
+    </div>
+  `;
+}
 
 /**
  * Event Listeners
@@ -1013,6 +1822,18 @@ document.getElementById('configAgentSelect').addEventListener('change', (e) => {
   const selectedAgent = e.target.value;
   const contentDiv = document.getElementById('configContent');
   contentDiv.innerHTML = CONFIG_TEMPLATES[selectedAgent] || CONFIG_TEMPLATES.isabella;
+  
+  // Re-initialize toggle handlers for the new content
+  setTimeout(() => {
+    const toggles = contentDiv.querySelectorAll('input[type="checkbox"][data-toggle-id]');
+    toggles.forEach(toggle => {
+      const toggleId = toggle.getAttribute('data-toggle-id');
+      const notesField = document.getElementById(toggleId + '-notes');
+      if (notesField && toggle.checked) {
+        notesField.style.display = 'block';
+      }
+    });
+  }, 100);
 });
 
 // Close config popup when clicking outside
